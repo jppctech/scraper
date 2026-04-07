@@ -36,7 +36,6 @@ app = FastAPI(title="Product Analyzer Scraper", version="4.0.0", lifespan=lifesp
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
