@@ -22,7 +22,7 @@ except ImportError:
 # ─── Constants ───────────────────────────────────────────────────────────────
 
 BLACKLIST_DURATION_SECONDS = 300   # 5 minutes
-MAX_FAILURES_BEFORE_BLACKLIST = 2
+MAX_FAILURES_BEFORE_BLACKLIST = 5  # Was 2 — too aggressive with few proxies
 
 # CAPTCHA / block detection patterns (case-insensitive)
 BLOCK_PATTERNS = [
@@ -107,7 +107,9 @@ async def initialize() -> int:
     global _pool
 
     proxy_list_raw = os.getenv("WEB_SHARE_PROXY_LIST", "")
-    if not proxy_list_raw.strip():
+    # Handle multiline .env values — strip all whitespace/newlines
+    proxy_list_raw = proxy_list_raw.replace("\r", "").replace("\n", "").strip()
+    if not proxy_list_raw:
         print("[Proxy] ⚠️  WEB_SHARE_PROXY_LIST not set — proxy fallback disabled")
         _pool.initialized = True
         return 0
@@ -124,7 +126,7 @@ async def initialize() -> int:
             print(f"[Proxy] ⚠️  Skipping malformed entry: {entry[:30]}")
             continue
 
-        ip, port, username, password = parts
+        ip, port, username, password = [p.strip() for p in parts]
         proxy_url = f"http://{username}:{password}@{ip}:{port}"
         proxies.append(ProxyEntry(
             proxy_url=proxy_url,

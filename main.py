@@ -147,8 +147,8 @@ def scrape_url_sync(url: str, timeout: int = 5) -> ScrapeResponse:
 
     # ── Tier 1: Direct scrape (no proxy) ─────────────────────────────────
     try:
-        # Aggressive timeout for direct scrape. If it takes longer, it's a silent block.
-        direct_timeout = min(timeout, 3) 
+        # Give sites enough time to respond — 8s for direct (was 3s, too aggressive)
+        direct_timeout = min(timeout, 8) 
         response = curl_requests.get(
             url, headers=BROWSER_HEADERS, impersonate=IMPERSONATE_PROFILE,
             timeout=direct_timeout, allow_redirects=True, max_redirects=5,
@@ -203,7 +203,7 @@ def scrape_url_sync(url: str, timeout: int = 5) -> ScrapeResponse:
             break
 
         try:
-            proxy_timeout = min(timeout, 5) # Short timeout for proxy
+            proxy_timeout = min(timeout, 10) # Proxies need more time due to extra hop
             response = curl_requests.get(
                 url, headers=BROWSER_HEADERS, impersonate=IMPERSONATE_PROFILE,
                 timeout=proxy_timeout, allow_redirects=True, max_redirects=5,
